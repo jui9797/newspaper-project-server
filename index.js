@@ -54,8 +54,23 @@ app.get('/users', async(req,res)=>{
 
 // articles related api
 app.get('/articles', async(req, res)=>{
-    const result =await articlesCollection.find().toArray()
+  try{
+    const {publisher, tag, title} = req.query
+    let query ={}
+    if(publisher) query.publisher = publisher
+    if(tag) query.tag = tag
+    if(title) query.title = {
+      $regex: title || '',
+      $options: 'i'
+    }
+    const result =await articlesCollection.find(query).toArray()
     res.send(result);
+  }
+  catch (error){
+  console.error('Error fetching articles', error)
+  res.status(500).send({error: 'Internal server error'})
+  }
+    
 })
 
 // get article by id
