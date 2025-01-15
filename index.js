@@ -12,7 +12,7 @@ app.use(cors())
 app.use(express.json())
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId, ReturnDocument } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.jwr0f.mongodb.net/?retryWrites=true&w=majority&appName=Cluster01`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -58,6 +58,41 @@ app.get('/articles', async(req, res)=>{
     res.send(result);
 })
 
+// get article by id
+app.get('/articles/:id',  async(req,res)=>{
+  const id =req.params.id
+  const query ={_id:new ObjectId(id)}
+  const result =await articlesCollection.findOne(query)
+  res.send(result)
+})
+
+// increment related api
+// app.patch('/articles/:id/increment', async(req, res)=>{
+//   const id = req.params.id;
+//   try{
+//     const query ={_id: new ObjectId(id)}
+//     const update ={
+//       $inc:{view:1}
+//     }
+//     const options = { returnDocument: 'after' }
+
+//     const result =await articlesCollection.findOneAndUpdate(query, update, options)
+//     res.send({message:'view count incresed'})
+//   }
+//   catch (error){
+//     console.log('error incrementing view count', error)
+//     res.status(500).send({error:'internal server error'})
+//   }
+// })
+
+app.patch('/articles/:id', async(req, res)=>{
+  const id =req.params.id
+  const query = { _id: new ObjectId(id)};
+  const update = { $inc: { view: 1 }};
+  const options = { returnDocument: 'after'};
+  const result = await articlesCollection.findOneAndUpdate(query, update, options);
+  res.send(result);
+})
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
