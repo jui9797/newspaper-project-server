@@ -1,6 +1,7 @@
 const express =require('express')
 const cors =require('cors')
 const app =express()
+const jwt =require('jsonwebtoken')
 require('dotenv').config()
 const port =process.env.port || 5000
 
@@ -32,6 +33,13 @@ async function run() {
 const userCollection =client.db("newsdb").collection("users")
 const articlesCollection =client.db('newsdb').collection("articles")
 
+// jwt related api
+app.post('/jwt', async(req, res)=>{
+  const user = req.body
+  const token =jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn:'1d'})
+  res.send({token})
+})
+
 // user related api
 app.post('/users', async(req, res)=>{
     const user =req.body
@@ -49,6 +57,19 @@ app.post('/users', async(req, res)=>{
 app.get('/users', async(req,res)=>{
     const result =await userCollection.find().toArray()
     res.send(result)
+})
+
+// make admin api
+app.patch('/users/admin/:id', async(req, res)=>{
+  const id =req.params.id
+  const filter ={_id: new ObjectId(id)}
+  const updatedDoc = {
+    $set: {
+      role: 'admin'
+    }
+  }
+  const result =await userCollection.updateOne(filter, updatedDoc)
+  res.send(result)
 })
 
 
