@@ -191,6 +191,20 @@ app.patch('/articles/status/:id', async(req, res)=>{
   res.send(result)
 })
 
+// patch for decline article
+app.patch('/articles/decline/:id', async(req, res)=>{
+  const item =req.body
+  const id =req.params.id
+  const filter ={_id: new ObjectId(id)}
+  const updatedDoc ={
+    $set: {
+      declineReason: item.declineReason
+    }
+  }
+  const result =await articlesCollection.updateOne(filter, updatedDoc)
+  res.send(result)
+})
+
 // patch for updating type premium
 app.patch('/articles/premium/:id', async(req, res)=>{
   const id =req.params.id
@@ -203,6 +217,14 @@ app.patch('/articles/premium/:id', async(req, res)=>{
   const result =await articlesCollection.updateOne(filter, updatedDoc)
   console.log(result)
   res.send(result)
+})
+
+// delete article by admin
+app.delete('/articles/:id', async (req, res) => {
+  const id = req.params.id;
+  const query = { _id: new ObjectId(id) }
+  const result = await articlesCollection.deleteOne(query);
+  res.send(result);
 })
 
 
