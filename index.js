@@ -42,7 +42,7 @@ app.post('/jwt', async(req, res)=>{
 
 // middleware for jwt
 const verifyToken =(req, res, next) =>{
-  console.log('inside verify token', req.headers)
+  // console.log('inside verify token', req.headers)
   if(!req.headers.authorization){
     return res.status(401).send({message: 'unauthorized access'})
   }
@@ -83,7 +83,7 @@ app.post('/users', async(req, res)=>{
 })
 
 // get all users
-app.get('/users',verifyToken, async(req,res)=>{
+app.get('/users',verifyToken,verifyAdmin, async(req,res)=>{
   // console.log(req.headers)
     const result =await userCollection.find().toArray()
     res.send(result)
@@ -167,6 +167,7 @@ app.get('/articles/:id',  async(req,res)=>{
 //   }
 // })
 
+// increse view count
 app.patch('/articles/:id', async(req, res)=>{
   const id =req.params.id
   const query = { _id: new ObjectId(id)};
@@ -175,6 +176,36 @@ app.patch('/articles/:id', async(req, res)=>{
   const result = await articlesCollection.findOneAndUpdate(query, update, options);
   res.send(result);
 })
+
+// patch for updaing status
+app.patch('/articles/status/:id', async(req, res)=>{
+  const id =req.params.id
+  const filter ={_id: new ObjectId(id)}
+  const updatedDoc = {
+    $set: {
+      status: 'approved'
+    }
+  }
+  const result =await articlesCollection.updateOne(filter, updatedDoc)
+  console.log(result)
+  res.send(result)
+})
+
+// patch for updating type premium
+app.patch('/articles/premium/:id', async(req, res)=>{
+  const id =req.params.id
+  const filter ={_id: new ObjectId(id)}
+  const updatedDoc = {
+    $set: {
+      type: 'premium'
+    }
+  }
+  const result =await articlesCollection.updateOne(filter, updatedDoc)
+  console.log(result)
+  res.send(result)
+})
+
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
