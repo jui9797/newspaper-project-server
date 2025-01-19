@@ -32,6 +32,7 @@ async function run() {
 
 const userCollection =client.db("newsdb").collection("users")
 const articlesCollection =client.db('newsdb').collection("articles")
+const publisherCollection =client.db('newsdb').collection('publishers')
 
 // jwt related api
 app.post('/jwt', async(req, res)=>{
@@ -105,7 +106,7 @@ app.get('/users/admin/:email', verifyToken, async(req, res)=>{
 })
 
 // make admin api
-app.patch('/users/admin/:id', async(req, res)=>{
+app.patch('/users/admin/:id',verifyToken, verifyAdmin, async(req, res)=>{
   const id =req.params.id
   const filter ={_id: new ObjectId(id)}
   const updatedDoc = {
@@ -178,7 +179,7 @@ app.patch('/articles/:id', async(req, res)=>{
 })
 
 // patch for updaing status
-app.patch('/articles/status/:id', async(req, res)=>{
+app.patch('/articles/status/:id',verifyToken, verifyAdmin, async(req, res)=>{
   const id =req.params.id
   const filter ={_id: new ObjectId(id)}
   const updatedDoc = {
@@ -192,7 +193,7 @@ app.patch('/articles/status/:id', async(req, res)=>{
 })
 
 // patch for decline article
-app.patch('/articles/decline/:id', async(req, res)=>{
+app.patch('/articles/decline/:id',verifyToken, verifyAdmin, async(req, res)=>{
   const item =req.body
   const id =req.params.id
   const filter ={_id: new ObjectId(id)}
@@ -206,7 +207,7 @@ app.patch('/articles/decline/:id', async(req, res)=>{
 })
 
 // patch for updating type premium
-app.patch('/articles/premium/:id', async(req, res)=>{
+app.patch('/articles/premium/:id',verifyToken, verifyAdmin, async(req, res)=>{
   const id =req.params.id
   const filter ={_id: new ObjectId(id)}
   const updatedDoc = {
@@ -220,10 +221,17 @@ app.patch('/articles/premium/:id', async(req, res)=>{
 })
 
 // delete article by admin
-app.delete('/articles/:id', async (req, res) => {
+app.delete('/articles/:id',verifyToken, verifyAdmin, async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) }
   const result = await articlesCollection.deleteOne(query);
+  res.send(result);
+})
+
+// add publisher by admin
+app.post('/publishers',verifyToken, verifyAdmin, async(req, res) =>{
+  const publisher =req.body;
+  const result = await publisherCollection.insertOne(publisher)
   res.send(result);
 })
 
