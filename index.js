@@ -105,6 +105,30 @@ app.get('/users/admin/:email', verifyToken, async(req, res)=>{
   res.send({admin})
 })
 
+// get user by email public
+app.get('/user/:email', async(req, res) =>{
+  const email =req.params.email
+  const query ={email: email}
+  const result = await userCollection.findOne(query)
+  res.send(result)
+})
+
+
+// patch user info public
+app.patch('/user/:email', async(req, res) =>{
+  const item =req.body
+  const email =req.params.email
+  const query ={email: email}
+  const updatedDoc = {
+    $set: {
+      name:item.name,
+      photoURL:item.photo
+    }
+  }
+  const result = await userCollection.updateOne(query, updatedDoc)
+  res.send(result)
+})
+
 // make admin api
 app.patch('/users/admin/:id',verifyToken, verifyAdmin, async(req, res)=>{
   const id =req.params.id
@@ -148,6 +172,16 @@ app.get('/articles/:id',  async(req,res)=>{
   const result =await articlesCollection.findOne(query)
   res.send(result)
 })
+
+// post article
+app.post('/articles', async(req, res) =>{
+  const article =req.body;
+  const result = await articlesCollection.insertOne(article)
+  res.send(result);
+})
+
+
+
 
 // increment related api
 // app.patch('/articles/:id/increment', async(req, res)=>{
@@ -233,6 +267,13 @@ app.post('/publishers',verifyToken, verifyAdmin, async(req, res) =>{
   const publisher =req.body;
   const result = await publisherCollection.insertOne(publisher)
   res.send(result);
+})
+
+// get all publisher
+app.get('/publishers', async(req,res)=>{
+  
+    const result =await publisherCollection.find().toArray()
+    res.send(result)
 })
 
 
