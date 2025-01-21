@@ -147,14 +147,16 @@ app.patch('/users/admin/:id',verifyToken, verifyAdmin, async(req, res)=>{
 // articles related api
 app.get('/articles', async(req, res)=>{
   try{
-    const {publisher, tag, title} = req.query
+    const {publisher, tag, title, email} = req.query
     let query ={}
     if(publisher) query.publisher = publisher
+    
     if(tag) query.tag = tag
     if(title) query.title = {
       $regex: title || '',
       $options: 'i'
     }
+    if (email) query.authorEmail = email
     const result =await articlesCollection.find(query).toArray()
     res.send(result);
   }
@@ -173,6 +175,14 @@ app.get('/articles/:id',  async(req,res)=>{
   res.send(result)
 })
 
+// get articles by email
+// app.get('/articles/:email', async(req, res) =>{
+//   const email =req.params.email
+//   const query ={authorEmail: email}
+//   const result =await articlesCollection.find(query).toArray()
+//   res.send(result)
+// })
+
 // post article
 app.post('/articles', async(req, res) =>{
   const article =req.body;
@@ -184,23 +194,7 @@ app.post('/articles', async(req, res) =>{
 
 
 // increment related api
-// app.patch('/articles/:id/increment', async(req, res)=>{
-//   const id = req.params.id;
-//   try{
-//     const query ={_id: new ObjectId(id)}
-//     const update ={
-//       $inc:{view:1}
-//     }
-//     const options = { returnDocument: 'after' }
 
-//     const result =await articlesCollection.findOneAndUpdate(query, update, options)
-//     res.send({message:'view count incresed'})
-//   }
-//   catch (error){
-//     console.log('error incrementing view count', error)
-//     res.status(500).send({error:'internal server error'})
-//   }
-// })
 
 // increse view count
 app.patch('/articles/:id', async(req, res)=>{
@@ -210,6 +204,31 @@ app.patch('/articles/:id', async(req, res)=>{
   const options = { returnDocument: 'after'};
   const result = await articlesCollection.findOneAndUpdate(query, update, options);
   res.send(result);
+})
+
+// patch whole article data
+app.patch('/article/update/:id', async(req, res) =>{
+  const id = req.params.id
+  const item =req.body
+  const filter ={_id: new ObjectId(id)}
+  const updatedDoc = {
+    $set: {
+      title:item.title,
+      image:item.image,
+      publisher:item.publisher,
+      description:item.description,
+      view: item.view,
+      authorName:item.authorName,
+      authorEmail: item.authorEmail,
+      authorPhoto:item.authorPhoto,
+      postedDate:item.postedDate,
+      status:item.status,
+      tag:item.tag,
+      type:item.type
+    }
+  }
+  const result =await articlesCollection.updateOne(filter, updatedDoc)
+  res.send(result)
 })
 
 // patch for updaing status
@@ -233,6 +252,7 @@ app.patch('/articles/decline/:id',verifyToken, verifyAdmin, async(req, res)=>{
   const filter ={_id: new ObjectId(id)}
   const updatedDoc ={
     $set: {
+      status:'declined',
       declineReason: item.declineReason
     }
   }
@@ -254,8 +274,8 @@ app.patch('/articles/premium/:id',verifyToken, verifyAdmin, async(req, res)=>{
   res.send(result)
 })
 
-// delete article by admin
-app.delete('/articles/:id',verifyToken, verifyAdmin, async (req, res) => {
+// delete article by admin and user too
+app.delete('/articles/:id',verifyToken,  async (req, res) => {
   const id = req.params.id;
   const query = { _id: new ObjectId(id) }
   const result = await articlesCollection.deleteOne(query);
