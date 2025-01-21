@@ -86,8 +86,12 @@ app.post('/users', async(req, res)=>{
 // get all users
 app.get('/users',verifyToken,verifyAdmin, async(req,res)=>{
   // console.log(req.headers)
-    const result =await userCollection.find().toArray()
-    res.send(result)
+  const page = parseInt(req.query.page)
+  const limit = parseInt(req.query.limit)
+  const startIndex =(page-1)*limit
+  const total =await userCollection.countDocuments()
+    const parPage =await userCollection.find().skip(startIndex).limit(limit).toArray()
+    res.json({total, parPage})
 })
 
 // check user admin or not api
@@ -165,6 +169,16 @@ app.get('/articles', async(req, res)=>{
   res.status(500).send({error: 'Internal server error'})
   }
     
+})
+
+// get all articles for pagination
+app.get('/allArticles', async(req, res) =>{
+  const page =parseInt(req.query.page)
+  const limit = parseInt(req.query.limit)
+  const startIndex =(page-1)*limit
+  const total =await articlesCollection.countDocuments()
+  const parPage =await articlesCollection.find().skip(startIndex).limit(limit).toArray()
+  res.json({total, parPage})
 })
 
 // get article by id
