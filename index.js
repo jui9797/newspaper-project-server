@@ -83,6 +83,12 @@ app.post('/users', async(req, res)=>{
     res.send(result)
 })
 
+// get all users for homepage
+app.get('/allUsers', async(req, res)=>{
+  const result = await userCollection.find().toArray()
+  res.send(result)
+})
+
 // get all users
 app.get('/users',verifyToken,verifyAdmin, async(req,res)=>{
   // console.log(req.headers)
