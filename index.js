@@ -179,6 +179,13 @@ app.get('/articles', async(req, res)=>{
     
 })
 
+// get top 6 articles for home page
+app.get('/topViewed' , async(req, res) =>{
+  // const articles = req.body
+  const result = await articlesCollection.find().sort({ view: -1 }).limit(6).toArray()
+  res.send(result)
+})
+
 // get all articles for pagination
 app.get('/allArticles', async(req, res) =>{
   const page =parseInt(req.query.page)
@@ -197,13 +204,7 @@ app.get('/articles/:id',  async(req,res)=>{
   res.send(result)
 })
 
-// get articles by email
-// app.get('/articles/:email', async(req, res) =>{
-//   const email =req.params.email
-//   const query ={authorEmail: email}
-//   const result =await articlesCollection.find(query).toArray()
-//   res.send(result)
-// })
+
 
 // post article
 app.post('/articles', async(req, res) =>{
