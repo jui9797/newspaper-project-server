@@ -35,6 +35,7 @@ async function run() {
 const userCollection =client.db("newsdb").collection("users")
 const articlesCollection =client.db('newsdb').collection("articles")
 const publisherCollection =client.db('newsdb').collection('publishers')
+const paymentCollection =client.db('newsdb').collection('payments')
 
 // jwt related api
 app.post('/jwt', async(req, res)=>{
@@ -117,11 +118,39 @@ app.get('/users/admin/:email', verifyToken, async(req, res)=>{
   res.send({admin})
 })
 
+// check user premium or not
+app.get('/users/premium/:email', verifyToken, async(req, res)=>{
+  const email =req.params.email
+  
+  const query ={email:email}
+  const user = await userCollection.findOne(query)
+  
+  res.send(user)
+})
+
+
 // get user by email public
 app.get('/user/:email', async(req, res) =>{
   const email =req.params.email
+  
+  
   const query ={email: email}
   const result = await userCollection.findOne(query)
+  
+  res.send(result)
+})
+
+// patch for after subscription
+app.patch('/expired/:email', async(req, res)=>{
+  
+  const email =req.params.email
+  const query ={email: email}
+  const updatedDoc = {
+    $set: {
+      premiumTaken: null
+    }
+  }
+  const result = await userCollection.updateOne(query, updatedDoc)
   res.send(result)
 })
 
@@ -151,6 +180,21 @@ app.patch('/users/admin/:id',verifyToken, verifyAdmin, async(req, res)=>{
     }
   }
   const result =await userCollection.updateOne(filter, updatedDoc)
+  res.send(result)
+})
+
+// patch for premum users
+app.patch('/premiumTaken/:email', async(req, res)=>{
+  const {expirationDate} =req.body
+  console.log(expirationDate)
+  const email = req.params.email
+  const filter ={email}
+  const updatedDoc ={
+      $set: {
+        premiumTaken: expirationDate
+      }
+  }
+  const result = await userCollection.updateOne(filter, updatedDoc)
   res.send(result)
 })
 
@@ -335,6 +379,51 @@ res.send({
 })
 
 })
+
+// save payment 
+app.post('/payments', async(req, res)=>{
+  const payment =req.body
+  const paymentResult = await paymentCollection.insertOne(payment)
+  res.send(paymentResult)
+})
+
+
+
+
+
+// aggegate pipeline
+
+app.get('/publishers-stats', async (req, res) => {
+  try {
+    // Step 1: Aggregate articles by publisher
+    const pipeline = [
+      {
+        $group: {
+          _id: "$publisher",
+          totalArticles: { $sum: 1 },
+        },
+      },
+    ];
+
+    const articlesByPublisher = await articlesCollection.aggregate(pipeline).toArray();
+
+    // Step 2: Calculate total number of articles
+    const totalArticles = articlesByPublisher.reduce((acc, curr) => acc + curr.totalArticles, 0);
+
+    // Step 3: Calculate percentage for each publisher
+    const publisherStats = articlesByPublisher.map((publisher) => ({
+      name: publisher._id,
+      percentage: ((publisher.totalArticles / totalArticles) * 100).toFixed(2),
+    }));
+
+    res.json(publisherStats);
+  } catch (error) {
+    console.error("Error fetching publisher stats", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
+
+
 
 
 
