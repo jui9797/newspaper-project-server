@@ -30,7 +30,7 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
 
 const userCollection =client.db("newsdb").collection("users")
 const articlesCollection =client.db('newsdb').collection("articles")
@@ -186,7 +186,7 @@ app.patch('/users/admin/:id',verifyToken, verifyAdmin, async(req, res)=>{
 // patch for premum users
 app.patch('/premiumTaken/:email', async(req, res)=>{
   const {expirationDate} =req.body
-  console.log(expirationDate)
+  // console.log(expirationDate)
   const email = req.params.email
   const filter ={email}
   const updatedDoc ={
@@ -308,7 +308,7 @@ app.patch('/articles/status/:id',verifyToken, verifyAdmin, async(req, res)=>{
     }
   }
   const result =await articlesCollection.updateOne(filter, updatedDoc)
-  console.log(result)
+  // console.log(result)
   res.send(result)
 })
 
@@ -337,7 +337,7 @@ app.patch('/articles/premium/:id',verifyToken, verifyAdmin, async(req, res)=>{
     }
   }
   const result =await articlesCollection.updateOne(filter, updatedDoc)
-  console.log(result)
+  // console.log(result)
   res.send(result)
 })
 
@@ -428,8 +428,8 @@ app.get('/publishers-stats', async (req, res) => {
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+    // await client.db("admin").command({ ping: 1 });
+    // console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
@@ -439,7 +439,7 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res)=>{
-    res.send('news is watting')
+    res.send('news is waitting')
 })
 
 app.listen(port, ()=>{
