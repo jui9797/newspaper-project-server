@@ -252,9 +252,28 @@ app.get('/articles/:id',  async(req,res)=>{
 
 // post article
 app.post('/articles', async(req, res) =>{
-  const article =req.body;
-  const result = await articlesCollection.insertOne(article)
-  res.send(result);
+  try{
+    const article =req.body;
+    const userEmail =article.authorEmail
+    const user =await userCollection.findOne({email:userEmail})
+    const isPremiumUser =!!user.premiumTaken
+
+    if(!isPremiumUser){
+      const existingArticle =await articlesCollection.findOne({authorEmail:userEmail})
+      if(existingArticle){
+        return res.status(403).send({error:'Normal user are allowed to published only one article'})
+      }
+    }
+    const result = await articlesCollection.insertOne(article)
+    res.send(result);
+
+  } catch (error){
+    console.error('Error adding article', error)
+    res.status(500).send({ error: 'An error occurred while adding the article' });
+  }
+  
+  
+ 
 })
 
 
