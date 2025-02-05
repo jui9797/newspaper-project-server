@@ -82,7 +82,7 @@ The backend for the Newspaper Aggregation Website is built with Node.js, Express
 
 1. Clone the repository:
    ```bash
-   git clone <https://github.com/Programming-Hero-Web-Course4/b10a12-server-side-jui9797>
+   git clone <https://github.com/jui9797/newspaper-project-server>
    ```
 
 2. Navigate to the server directory:
